@@ -4,6 +4,8 @@ from urllib.error import HTTPError
 import re
 import time
 
+#TODO: Rewrite to collect data from Amazon, keep it in db using SQLAlchemy and display in QT app
+
 time_start = time.time()
 
 ISBNREG = re.compile(r'<div class="isbn-item"><span class="isbn-number">(.+?)</span>')
@@ -20,7 +22,6 @@ def get_isbn_list():
 
     data = page.read().decode('utf-8')
     page.close()
-    print(ISBNREG.findall(data))
     return [re.sub(r'\D', '', x) for x in ISBNREG.findall(data)]
 
 
@@ -52,8 +53,7 @@ def getPrice(isbn):
 
 def main():
     isbn_list = get_isbn_list()
-    print(isbn_list)
-    print(len(isbn_list))
+    print('isbn count: {}, dublicates: {}'.format(len(isbn_list), len(isbn_list)-len(set(isbn_list))))
     for isbn in isbn_list:
         t = threading.Thread(target=getPrice, args=(isbn,), name=isbn)
         threads.append(t)
@@ -63,14 +63,12 @@ def main():
             pass
         t.start()
 
-    for t in threads:
-        t.join()
-    print('Finished')
+    # for t in threads:
+    #     t.join()
+
     print(len(price_dict))
+    print(price_dict)
     print('seconds since start: {}'.format(time.time() - time_start))
-    for k in isbn_list:
-        if k not in price_dict.keys():
-            print(k)
 
 
 if __name__ == '__main__':
